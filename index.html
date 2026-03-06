@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#d4a574">
+    <link rel="manifest" href="manifest.json">
+    <title>Memory Lane</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <h1>🛤️ Memory Lane</h1>
+            <button id="theme-toggle" class="btn-icon" title="Сменить тему">🌙</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Timeline Section -->
+        <section id="timeline-section" class="tab-content active">
+            <div class="filters">
+                <input type="text" id="search-input" placeholder="🔍 Поиск...">
+                <div class="filter-row">
+                    <select id="category-filter">
+                        <option value="">Все категории</option>
+                        <option value="Travel">Путешествия</option>
+                        <option value="Humor">Юмор</option>
+                        <option value="Achievement">Достижения</option>
+                    </select>
+                    <select id="year-filter">
+                        <option value="">Все годы</option>
+                    </select>
+                </div>
+            </div>
+            <div id="timeline" class="timeline"></div>
+        </section>
+
+        <!-- Members Section -->
+        <section id="members-section" class="tab-content">
+            <h2>The Legends Board</h2>
+            <div id="members-grid" class="members-grid"></div>
+        </section>
+
+        <!-- Map Section -->
+        <section id="map-section" class="tab-content">
+            <h2>Memory Map</h2>
+            <div id="map" class="map-container">
+                <p class="placeholder">🗺️ Карта будет добавлена в следующей версии</p>
+            </div>
+        </section>
+
+        <!-- Badges Section -->
+        <section id="badges-section" class="tab-content">
+            <h2>Ачивки группы</h2>
+            <div id="badges-list" class="badges-list"></div>
+        </section>
+    </main>
+
+    <!-- Modal: Add Event -->
+    <div id="event-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Добавить воспоминание</h2>
+            <form id="event-form">
+                <input type="text" id="event-title" placeholder="Заголовок" required>
+                <input type="date" id="event-date" required>
+                <select id="event-category" required>
+                    <option value="">Выберите категорию</option>
+                    <option value="Travel">Путешествия</option>
+                    <option value="Humor">Юмор</option>
+                    <option value="Achievement">Достижения</option>
+                </select>
+                <textarea id="event-description" placeholder="Описание (поддерживается Markdown)" rows="4"></textarea>
+                <input type="url" id="event-media" placeholder="Ссылка на фото/видео">
+                <select id="event-author" required>
+                    <option value="">Автор</option>
+                </select>
+                <button type="submit" class="btn-primary">Сохранить</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" data-tab="timeline">
+            <span class="nav-icon">📅</span>
+            <span class="nav-label">Лента</span>
+        </button>
+        <button class="nav-btn" data-tab="members">
+            <span class="nav-icon">👥</span>
+            <span class="nav-label">Участники</span>
+        </button>
+        <button class="nav-btn" data-tab="map">
+            <span class="nav-icon">🗺️</span>
+            <span class="nav-label">Карта</span>
+        </button>
+        <button class="nav-btn" data-tab="badges">
+            <span class="nav-icon">🏆</span>
+            <span class="nav-label">Ачивки</span>
+        </button>
+    </nav>
+
+    <!-- Floating Action Button -->
+    <button id="add-event-btn" class="fab" title="Добавить воспоминание">
+        <span class="fab-icon">+</span>
+    </button>
+
+    <!-- Settings Menu -->
+    <div id="settings-menu" class="settings-menu">
+        <button id="export-btn" class="menu-item">📥 Экспорт данных</button>
+        <button id="import-btn" class="menu-item">📤 Импорт данных</button>
+        <input type="file" id="import-file" accept=".json" style="display: none;">
+    </div>
+    <button id="settings-toggle" class="settings-toggle">⚙️</button>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
