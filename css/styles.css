@@ -572,11 +572,25 @@ button, a, input, select, textarea {
 
 
 /* Groups List Styles */
-.search-bar {
+.search-bar-bottom {
+    position: fixed;
+    bottom: calc(var(--bottom-nav-height) + 15px);
+    left: 15px;
+    right: 15px;
+    z-index: 90;
+    transition: all 0.3s ease;
+}
+
+.search-bar-bottom.active {
+    position: sticky;
+    top: calc(var(--header-height) + 15px);
+    bottom: auto;
+    left: 0;
+    right: 0;
     margin-bottom: 20px;
 }
 
-.search-bar input {
+.search-bar-bottom input {
     width: 100%;
     padding: 14px;
     border: 2px solid var(--border);
@@ -584,6 +598,7 @@ button, a, input, select, textarea {
     background: var(--card-bg);
     color: var(--text-primary);
     font-size: 1rem;
+    box-shadow: 0 4px 12px var(--shadow);
 }
 
 .groups-list {

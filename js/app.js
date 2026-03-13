@@ -151,9 +151,27 @@ function renderGroupsList(searchQuery = '') {
     });
 }
 
-// Groups search
+// Groups search with position change
+const searchBarBottom = document.getElementById('search-bar-bottom');
+
+groupsSearch.addEventListener('focus', () => {
+    searchBarBottom.classList.add('active');
+    setTimeout(() => {
+        groupsSearch.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+});
+
+groupsSearch.addEventListener('blur', () => {
+    if (!groupsSearch.value) {
+        searchBarBottom.classList.remove('active');
+    }
+});
+
 groupsSearch.addEventListener('input', (e) => {
     renderGroupsList(e.target.value);
+    if (!e.target.value) {
+        searchBarBottom.classList.remove('active');
+    }
 });
 
 // Render Timeline
