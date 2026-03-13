@@ -1,21 +1,27 @@
-// Data structure and localStorage management
+// Data structure and localStorage management with Groups support
 
 const DEFAULT_DATA = {
-    group_name: "Моя группа",
-    members: [
-        { id: 1, name: "Алекс", bio: "Мастер багов", badges: ["Coffee Addict"], quote: "", stats: 0 },
-        { id: 2, name: "Мария", bio: "Душа компании", badges: ["Party Master"], quote: "", stats: 0 }
-    ],
-    events: [
+    groups: [
         {
-            id: 101,
-            date: "2023-05-15",
-            title: "Поход на Алтай",
-            description: "Тот самый день, когда мы потеряли палатку.",
-            author_id: 1,
-            category: "Travel",
-            media: "",
-            location: { lat: 50.0, lng: 85.0 }
+            id: 1,
+            name: "Семья",
+            description: "Наша дружная семья",
+            members: [
+                { id: 1, name: "Алекс", bio: "Мастер багов", badges: ["Coffee Addict"], quote: "", stats: 1 },
+                { id: 2, name: "Мария", bio: "Душа компании", badges: ["Party Master"], quote: "", stats: 0 }
+            ],
+            events: [
+                {
+                    id: 101,
+                    date: "2023-05-15",
+                    title: "Поход на Алтай",
+                    description: "Тот самый день, когда мы потеряли палатку.",
+                    author_id: 1,
+                    category: "Travel",
+                    media: "",
+                    location: { lat: 50.0, lng: 85.0 }
+                }
+            ]
         }
     ]
 };
@@ -34,24 +40,65 @@ class DataManager {
         localStorage.setItem('memoryLaneData', JSON.stringify(this.data));
     }
 
-    addEvent(eventData) {
+    // Groups management
+    getGroups(searchQuery = '') {
+        let groups = this.data.groups || [];
+        
+        if (searchQuery) {
+            const search = searchQuery.toLowerCase();
+            groups = groups.filter(g => 
+                g.name.toLowerCase().includes(search) ||
+                (g.description && g.description.toLowerCase().includes(search))
+            );
+        }
+        
+        return groups;
+    }
+
+    getGroupById(groupId) {
+        return this.data.groups.find(g => g.id === groupId);
+    }
+
+    addGroup(groupData) {
+        const newGroup = {
+            id: Date.now(),
+            name: groupData.name,
+            description: groupData.description || '',
+            members: [],
+            events: []
+        };
+        
+        this.data.groups.push(newGroup);
+        this.saveData();
+        return newGroup;
+    }
+
+    // Events management
+    addEvent(groupId, eventData) {
+        const group = this.getGroupById(groupId);
+        if (!group) return null;
+        
         const newEvent = {
             id: Date.now(),
             ...eventData,
             location: { lat: 0, lng: 0 }
         };
-        this.data.events.push(newEvent);
+        
+        group.events.push(newEvent);
         
         // Update member stats
-        const member = this.data.members.find(m => m.id === parseInt(eventData.author_id));
+        const member = group.members.find(m => m.id === parseInt(eventData.author_id));
         if (member) member.stats++;
         
         this.saveData();
         return newEvent;
     }
 
-    getEvents(filters = {}) {
-        let events = [...this.data.events];
+    getEvents(groupId, filters = {}) {
+        const group = this.getGroupById(groupId);
+        if (!group) return [];
+        
+        let events = [...group.events];
         
         if (filters.category) {
             events = events.filter(e => e.category === filters.category);
@@ -72,14 +119,19 @@ class DataManager {
         return events.sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
-    getMembers() {
-        return this.data.members;
+    // Members management
+    getMembers(groupId) {
+        const group = this.getGroupById(groupId);
+        return group ? group.members : [];
     }
 
-    getMemberById(id) {
-        return this.data.members.find(m => m.id === id);
+    getMemberById(groupId, memberId) {
+        const group = this.getGroupById(groupId);
+        if (!group) return null;
+        return group.members.find(m => m.id === memberId);
     }
 
+    // Export/Import
     exportData() {
         const dataStr = JSON.stringify(this.data, null, 2);
         const blob = new Blob([dataStr], { type: 'application/json' });
@@ -102,8 +154,11 @@ class DataManager {
         }
     }
 
-    getYears() {
-        const years = this.data.events.map(e => e.date.substring(0, 4));
+    getYears(groupId) {
+        const group = this.getGroupById(groupId);
+        if (!group) return [];
+        
+        const years = group.events.map(e => e.date.substring(0, 4));
         return [...new Set(years)].sort().reverse();
     }
 }

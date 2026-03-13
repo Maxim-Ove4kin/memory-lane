@@ -19,8 +19,20 @@
     </header>
 
     <main class="container">
-        <!-- Timeline Section -->
-        <section id="timeline-section" class="tab-content active">
+        <!-- Groups List Section (Main Screen) -->
+        <section id="groups-section" class="tab-content active">
+            <div class="search-bar">
+                <input type="text" id="groups-search" placeholder="🔍 Поиск групп...">
+            </div>
+            <div id="groups-list" class="groups-list"></div>
+        </section>
+
+        <!-- Timeline Section (Inside Group) -->
+        <section id="timeline-section" class="tab-content">
+            <div class="group-header">
+                <button id="back-to-groups" class="btn-back">← Назад</button>
+                <h2 id="current-group-name"></h2>
+            </div>
             <div class="filters">
                 <input type="text" id="search-input" placeholder="🔍 Поиск...">
                 <div class="filter-row">
@@ -38,23 +50,32 @@
             <div id="timeline" class="timeline"></div>
         </section>
 
-        <!-- Members Section -->
+        <!-- Members Section (Inside Group) -->
         <section id="members-section" class="tab-content">
-            <h2>The Legends Board</h2>
+            <div class="group-header">
+                <button id="back-to-groups-members" class="btn-back">← Назад</button>
+                <h2>The Legends Board</h2>
+            </div>
             <div id="members-grid" class="members-grid"></div>
         </section>
 
-        <!-- Map Section -->
+        <!-- Map Section (Inside Group) -->
         <section id="map-section" class="tab-content">
-            <h2>Memory Map</h2>
+            <div class="group-header">
+                <button id="back-to-groups-map" class="btn-back">← Назад</button>
+                <h2>Memory Map</h2>
+            </div>
             <div id="map" class="map-container">
                 <p class="placeholder">🗺️ Карта будет добавлена в следующей версии</p>
             </div>
         </section>
 
-        <!-- Badges Section -->
+        <!-- Badges Section (Inside Group) -->
         <section id="badges-section" class="tab-content">
-            <h2>Ачивки группы</h2>
+            <div class="group-header">
+                <button id="back-to-groups-badges" class="btn-back">← Назад</button>
+                <h2>Ачивки группы</h2>
+            </div>
             <div id="badges-list" class="badges-list"></div>
         </section>
     </main>
@@ -84,7 +105,19 @@
     </div>
 
     <!-- Mobile Bottom Navigation -->
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" id="main-nav">
+        <button class="nav-btn active" data-tab="groups">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label">Группы</span>
+        </button>
+        <button class="nav-btn" data-tab="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Настройки</span>
+        </button>
+    </nav>
+
+    <!-- Group Navigation (shown when inside a group) -->
+    <nav class="bottom-nav" id="group-nav" style="display: none;">
         <button class="nav-btn active" data-tab="timeline">
             <span class="nav-icon">📅</span>
             <span class="nav-label">Лента</span>
@@ -103,18 +136,36 @@
         </button>
     </nav>
 
-    <!-- Floating Action Button -->
-    <button id="add-event-btn" class="fab" title="Добавить воспоминание">
+    <!-- Floating Action Button (for adding new group or event) -->
+    <button id="add-btn" class="fab" title="Добавить">
         <span class="fab-icon">+</span>
     </button>
 
-    <!-- Settings Menu -->
-    <div id="settings-menu" class="settings-menu">
-        <button id="export-btn" class="menu-item">📥 Экспорт данных</button>
-        <button id="import-btn" class="menu-item">📤 Импорт данных</button>
-        <input type="file" id="import-file" accept=".json" style="display: none;">
+    <!-- Modal: Add/Create Group -->
+    <div id="group-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="group">&times;</span>
+            <h2>Создать группу</h2>
+            <form id="group-form">
+                <input type="text" id="group-name" placeholder="Название группы" required>
+                <textarea id="group-description" placeholder="Описание группы" rows="3"></textarea>
+                <button type="submit" class="btn-primary">Создать</button>
+            </form>
+        </div>
     </div>
-    <button id="settings-toggle" class="settings-toggle">⚙️</button>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="settings">&times;</span>
+            <h2>Настройки</h2>
+            <div class="settings-list">
+                <button id="export-btn" class="menu-item">📥 Экспорт данных</button>
+                <button id="import-btn" class="menu-item">📤 Импорт данных</button>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </div>
 
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>

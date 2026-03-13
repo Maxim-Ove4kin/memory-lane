@@ -1,51 +1,109 @@
-// Main application logic - Mobile Optimized
+// Main application logic - Mobile Optimized with Groups
 
 const dataManager = new DataManager();
+let currentGroupId = null;
 
 // DOM Elements
+const groupsList = document.getElementById('groups-list');
 const timeline = document.getElementById('timeline');
 const membersGrid = document.getElementById('members-grid');
 const badgesList = document.getElementById('badges-list');
 const eventModal = document.getElementById('event-modal');
+const groupModal = document.getElementById('group-modal');
+const settingsModal = document.getElementById('settings-modal');
 const eventForm = document.getElementById('event-form');
+const groupForm = document.getElementById('group-form');
 const searchInput = document.getElementById('search-input');
+const groupsSearch = document.getElementById('groups-search');
 const categoryFilter = document.getElementById('category-filter');
 const yearFilter = document.getElementById('year-filter');
 const themeToggle = document.getElementById('theme-toggle');
-const settingsToggle = document.getElementById('settings-toggle');
-const settingsMenu = document.getElementById('settings-menu');
+const mainNav = document.getElementById('main-nav');
+const groupNav = document.getElementById('group-nav');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     initNavigation();
     initTheme();
+    renderGroupsList();
+    setupEventListeners();
+    setupBackButtons();
+});
+
+// Navigation between main screen and group screen
+function initNavigation() {
+    // Main navigation (Groups/Settings)
+    const mainNavBtns = mainNav.querySelectorAll('.nav-btn');
+    mainNavBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTab = btn.dataset.tab;
+            
+            mainNavBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            if (targetTab === 'groups') {
+                showGroupsList();
+            } else if (targetTab === 'settings') {
+                settingsModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    });
+    
+    // Group navigation (Timeline/Members/Map/Badges)
+    const groupNavBtns = groupNav.querySelectorAll('.nav-btn');
+    groupNavBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetTab = btn.dataset.tab;
+            
+            groupNavBtns.forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            btn.classList.add('active');
+            document.getElementById(`${targetTab}-section`).classList.add('active');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+}
+
+// Show groups list (main screen)
+function showGroupsList() {
+    currentGroupId = null;
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('groups-section').classList.add('active');
+    mainNav.style.display = 'flex';
+    groupNav.style.display = 'none';
+    renderGroupsList();
+}
+
+// Enter group
+function enterGroup(groupId) {
+    currentGroupId = groupId;
+    const group = dataManager.getGroupById(groupId);
+    
+    document.getElementById('current-group-name').textContent = group.name;
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('timeline-section').classList.add('active');
+    
+    mainNav.style.display = 'none';
+    groupNav.style.display = 'flex';
+    groupNav.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    groupNav.querySelector('[data-tab="timeline"]').classList.add('active');
+    
     renderTimeline();
     renderMembers();
     renderBadges();
     populateYearFilter();
     populateAuthorSelect();
-    setupEventListeners();
-});
+}
 
-// Mobile Navigation
-function initNavigation() {
-    const navBtns = document.querySelectorAll('.nav-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    navBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const targetTab = btn.dataset.tab;
-            
-            navBtns.forEach(b => b.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-            
-            btn.classList.add('active');
-            document.getElementById(`${targetTab}-section`).classList.add('active');
-            
-            // Scroll to top on tab change
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    });
+// Back buttons
+function setupBackButtons() {
+    document.getElementById('back-to-groups').addEventListener('click', showGroupsList);
+    document.getElementById('back-to-groups-members').addEventListener('click', showGroupsList);
+    document.getElementById('back-to-groups-map').addEventListener('click', showGroupsList);
+    document.getElementById('back-to-groups-badges').addEventListener('click', showGroupsList);
 }
 
 // Theme Toggle
@@ -67,21 +125,42 @@ themeToggle.addEventListener('click', () => {
     updateThemeIcon(newTheme);
 });
 
-// Settings Menu Toggle
-settingsToggle.addEventListener('click', (e) => {
-    e.stopPropagation();
-    settingsMenu.classList.toggle('active');
-});
-
-document.addEventListener('click', (e) => {
-    if (!settingsMenu.contains(e.target) && e.target !== settingsToggle) {
-        settingsMenu.classList.remove('active');
+// Render Groups List
+function renderGroupsList(searchQuery = '') {
+    const groups = dataManager.getGroups(searchQuery);
+    groupsList.innerHTML = '';
+    
+    if (groups.length === 0) {
+        groupsList.innerHTML = '<p class="empty-state">Пока нет групп. Создайте первую!</p>';
+        return;
     }
+    
+    groups.forEach(group => {
+        const card = document.createElement('div');
+        card.className = 'group-card';
+        card.innerHTML = `
+            <div class="group-avatar">${group.name.charAt(0).toUpperCase()}</div>
+            <div class="group-info">
+                <h3>${group.name}</h3>
+                <p class="group-meta">👥 ${group.members.length} участников • 📝 ${group.events.length} событий</p>
+                ${group.description ? `<p class="group-description">${group.description}</p>` : ''}
+            </div>
+        `;
+        card.addEventListener('click', () => enterGroup(group.id));
+        groupsList.appendChild(card);
+    });
+}
+
+// Groups search
+groupsSearch.addEventListener('input', (e) => {
+    renderGroupsList(e.target.value);
 });
 
 // Render Timeline
 function renderTimeline(filters = {}) {
-    const events = dataManager.getEvents(filters);
+    if (!currentGroupId) return;
+    
+    const events = dataManager.getEvents(currentGroupId, filters);
     timeline.innerHTML = '';
     
     if (events.length === 0) {
@@ -90,7 +169,7 @@ function renderTimeline(filters = {}) {
     }
     
     events.forEach(event => {
-        const member = dataManager.getMemberById(event.author_id);
+        const member = dataManager.getMemberById(currentGroupId, event.author_id);
         const card = createEventCard(event, member);
         timeline.appendChild(card);
     });
@@ -112,7 +191,9 @@ function createEventCard(event, member) {
 
 // Render Members
 function renderMembers() {
-    const members = dataManager.getMembers();
+    if (!currentGroupId) return;
+    
+    const members = dataManager.getMembers(currentGroupId);
     membersGrid.innerHTML = '';
     
     members.forEach(member => {
@@ -133,7 +214,9 @@ function renderMembers() {
 
 // Render Badges
 function renderBadges() {
-    const members = dataManager.getMembers();
+    if (!currentGroupId) return;
+    
+    const members = dataManager.getMembers(currentGroupId);
     badgesList.innerHTML = '';
     
     const allBadges = members.flatMap(m => 
@@ -153,22 +236,65 @@ function renderBadges() {
     });
 }
 
-// Modal Controls
-document.getElementById('add-event-btn').addEventListener('click', () => {
-    eventModal.style.display = 'block';
+// FAB button - context aware
+document.getElementById('add-btn').addEventListener('click', () => {
+    if (currentGroupId) {
+        // Inside group - add event
+        eventModal.style.display = 'block';
+    } else {
+        // Main screen - create group
+        groupModal.style.display = 'block';
+    }
     document.body.style.overflow = 'hidden';
 });
 
-document.querySelector('.close').addEventListener('click', () => {
-    eventModal.style.display = 'none';
-    document.body.style.overflow = '';
+// Modal close buttons
+document.querySelectorAll('.close').forEach(closeBtn => {
+    closeBtn.addEventListener('click', () => {
+        const modalType = closeBtn.dataset.modal;
+        if (modalType === 'event') {
+            eventModal.style.display = 'none';
+        } else if (modalType === 'group') {
+            groupModal.style.display = 'none';
+        } else if (modalType === 'settings') {
+            settingsModal.style.display = 'none';
+        }
+        document.body.style.overflow = '';
+    });
 });
 
+// Close modals on outside click
 window.addEventListener('click', (e) => {
     if (e.target === eventModal) {
         eventModal.style.display = 'none';
         document.body.style.overflow = '';
     }
+    if (e.target === groupModal) {
+        groupModal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    if (e.target === settingsModal) {
+        settingsModal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+});
+
+// Group Form Submit
+groupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const groupData = {
+        name: document.getElementById('group-name').value,
+        description: document.getElementById('group-description').value
+    };
+    
+    dataManager.addGroup(groupData);
+    renderGroupsList();
+    groupForm.reset();
+    groupModal.style.display = 'none';
+    document.body.style.overflow = '';
+    
+    showToast('Группа создана!');
 });
 
 // Event Form Submit
@@ -184,15 +310,15 @@ eventForm.addEventListener('submit', (e) => {
         author_id: parseInt(document.getElementById('event-author').value)
     };
     
-    dataManager.addEvent(eventData);
+    dataManager.addEvent(currentGroupId, eventData);
     renderTimeline();
     renderMembers();
+    renderGroupsList();
     populateYearFilter();
     eventForm.reset();
     eventModal.style.display = 'none';
     document.body.style.overflow = '';
     
-    // Show success feedback
     showToast('Воспоминание добавлено!');
 });
 
@@ -215,13 +341,13 @@ function applyFilters() {
 // Export/Import
 document.getElementById('export-btn').addEventListener('click', () => {
     dataManager.exportData();
-    settingsMenu.classList.remove('active');
+    settingsModal.style.display = 'none';
+    document.body.style.overflow = '';
     showToast('Данные экспортированы!');
 });
 
 document.getElementById('import-btn').addEventListener('click', () => {
     document.getElementById('import-file').click();
-    settingsMenu.classList.remove('active');
 });
 
 document.getElementById('import-file').addEventListener('change', (e) => {
@@ -242,7 +368,9 @@ document.getElementById('import-file').addEventListener('change', (e) => {
 
 // Helper Functions
 function populateYearFilter() {
-    const years = dataManager.getYears();
+    if (!currentGroupId) return;
+    
+    const years = dataManager.getYears(currentGroupId);
     yearFilter.innerHTML = '<option value="">Все годы</option>';
     years.forEach(year => {
         const option = document.createElement('option');
@@ -253,8 +381,11 @@ function populateYearFilter() {
 }
 
 function populateAuthorSelect() {
-    const members = dataManager.getMembers();
+    if (!currentGroupId) return;
+    
+    const members = dataManager.getMembers(currentGroupId);
     const select = document.getElementById('event-author');
+    select.innerHTML = '<option value="">Автор</option>';
     members.forEach(member => {
         const option = document.createElement('option');
         option.value = member.id;
