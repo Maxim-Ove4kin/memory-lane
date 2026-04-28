@@ -4,19 +4,20 @@
 `/`
 
 ## Purpose
-Acts as the primary search entrypoint for the application.
+Главный SPA-экран приложения: показывает список групп, позволяет искать по ним и служит точкой входа во все внутренние сценарии.
 
 ## Main UI Elements
-- App title and hand-drawn decorative underline.
-- Search mode toggle between dish-name search and ingredient search.
-- Single input field whose label and placeholder depend on selected search mode.
-- Search action button.
-- Three promotional feature cards.
+- Заголовок `Memory Lane` и переключатель светлой/тёмной темы.
+- Список карточек групп с названием, числом участников и количеством событий.
+- Нижняя строка поиска групп, которая меняет позицию при фокусе.
+- Нижняя навигация с вкладками `Группы` и `Настройки`.
+- FAB-кнопка для создания новой группы.
 
 ## Data Flow
-- Stores the current search input in `localStorage` under `searchQuery`.
-- Navigates to `/results` with `next/navigation` router.
+- Читает группы из `DataManager`, который загружает данные из `localStorage` или demo-набора.
+- Поиск передаёт строку в `dataManager.getGroups(searchQuery)` и перерисовывает список.
+- Вход в группу сохраняет `currentGroupId` и переводит интерфейс во внутренние вкладки группы.
 
 ## Notes
-- The page is client-rendered.
-- Search execution is currently a prototype without backend validation.
+- Приложение не использует отдельный клиентский роутер.
+- Настройки, импорт и экспорт открываются через модальное окно, не через отдельную страницу.

@@ -2,11 +2,11 @@
 
 ## Стек технологий
 - **Frontend**: Vanilla JavaScript, HTML5, CSS3
-- **Build tool**: Vite 5.0.0
+- **Build tool**: Vite 5.x
 - **Formatting / linting**: Biome
-- **Хранение**: localStorage / IndexedDB (PWA)
-- **Карта**: OpenStreetMap / Google Maps API (план)
-- **AI**: OpenAI API (план)
+- **Хранение**: `localStorage`
+- **Карта**: `Leaflet` с тайлами Carto через CDN
+- **AI**: не интегрирован, запланирован на будущий этап
 
 ## Окружение
 - Node.js 18+ (для Vite)
@@ -17,6 +17,8 @@
 ```
 /memory-lane
 ├── index.html
+├── manifest.json
+├── docs/
 ├── package.json
 ├── vite.config.js
 ├── js/
@@ -25,11 +27,11 @@
 ├── css/
 │   └── styles.css
 ├── AGENTS.md
-└── memory_bank/ (документация)
+└── memory_bank/
 ```
 
 ## Ограничения
-- Без серверной части (все клиентское)
-- PWA для офлайн-режима
-- Mobile-first дизайн
+- Без серверной части и без мультипользовательской синхронизации
+- PWA-поддержка частичная: есть `manifest.json`, но нет `service worker`
+- Mobile-first интерфейс должен корректно работать в светлой и тёмной теме
 - В репозитории не должны оставаться legacy-конфиги от неиспользуемого стека
