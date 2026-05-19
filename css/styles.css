@@ -969,6 +969,9 @@ body.picker-fullscreen #fullscreen-map-modal {
 
 /* Expand button */
 .expand-map-btn {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
 	background: var(--bg-secondary);
 	border: 2px solid var(--border);
 	color: var(--text-primary);
@@ -982,6 +985,7 @@ body.picker-fullscreen #fullscreen-map-modal {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	z-index: 1000;
 }
 
 .expand-map-btn:active {

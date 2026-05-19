@@ -105,15 +105,13 @@
                 <textarea id="event-description" placeholder="Описание (поддерживается Markdown)" rows="4"></textarea>
 
                 <div class="location-picker-group" style="margin-bottom: 10px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
-                        <label style="font-weight: 500;">📍 Выберите место на карте или введите адрес</label>
-                        <button type="button" id="expand-picker-map-btn" class="expand-map-btn" title="Развернуть карту">⛶</button>
-                    </div>
+                    <label style="font-weight: 500; margin-bottom: 5px; display: block;">📍 Выберите место на карте или введите адрес</label>
                     <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                         <input type="text" id="event-address" placeholder="Введите адрес для поиска..." style="flex: 1; min-height: 44px; margin-bottom: 0;">
                         <button type="button" id="search-address-btn" class="btn-secondary" style="width: auto; padding: 0 15px; min-height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 0;">🔍</button>
                     </div>
                     <div id="picker-map-wrapper" class="picker-map-wrapper">
+                        <button type="button" id="expand-picker-map-btn" class="expand-map-btn" title="Развернуть карту">⛶</button>
                         <div id="picker-map" class="picker-map-inner"></div>
                     </div>
                     <input type="hidden" id="event-lat">
