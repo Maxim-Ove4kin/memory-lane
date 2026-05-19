@@ -33,7 +33,6 @@ const DEFAULT_DATA = {
 						"Тот самый день, когда мы потеряли палатку. Незабываемое приключение в горах!",
 					author_id: 1,
 					category: "Travel",
-					media: "",
 					location: { lat: 50.0, lng: 85.0 },
 				},
 				{
@@ -44,7 +43,6 @@ const DEFAULT_DATA = {
 						"Шашлыки, баня и ночёвка под звёздами. Лучший день рождения!",
 					author_id: 2,
 					category: "Achievement",
-					media: "",
 					location: { lat: 55.7558, lng: 37.6173 },
 				},
 				{
@@ -55,7 +53,6 @@ const DEFAULT_DATA = {
 						"Встречали Новый год в Санкт-Петербурге. Фейерверк на Дворцовой был шикарным!",
 					author_id: 1,
 					category: "Travel",
-					media: "",
 					location: { lat: 59.9343, lng: 30.3351 },
 				},
 				{
@@ -66,7 +63,6 @@ const DEFAULT_DATA = {
 						"Ходили на концерт любимой группы. Зал взорвался от восторга!",
 					author_id: 2,
 					category: "Humor",
-					media: "",
 					location: { lat: 55.765, lng: 37.59 },
 				},
 			],
@@ -102,7 +98,6 @@ const DEFAULT_DATA = {
 						"Отличный день у воды! Купались, жарили сосиски, играли в волейбол.",
 					author_id: 3,
 					category: "Travel",
-					media: "",
 					location: { lat: 55.5, lng: 36.0 },
 				},
 			],
@@ -174,7 +169,6 @@ class DataManager {
 			date: eventData.date,
 			category: eventData.category,
 			description: eventData.description,
-			media: eventData.media,
 			author_id: Number.parseInt(eventData.author_id),
 			location: { lat, lng },
 		};

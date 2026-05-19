@@ -3,7 +3,6 @@
 const dataManager = new DataManager();
 let currentGroupId = null;
 let mapInstance = null;
-let selectedMediaBase64 = "";
 
 // DOM Elements
 const groupsList = document.getElementById("groups-list");
@@ -232,7 +231,6 @@ function createEventCard(event, member) {
         <div class="event-date">${formatDate(event.date)}</div>
         <div class="event-category">${getCategoryIcon(event.category)} ${event.category}</div>
         <h3>${event.title}</h3>
-        ${event.media ? `<img src="${event.media}" alt="${event.title}" class="event-media">` : ""}
         <p class="event-description">${formatMarkdown(event.description)}</p>
         <div class="event-author">Автор: ${member ? member.name : "Неизвестно"}</div>
     `;
@@ -338,9 +336,8 @@ function initMap() {
 		}
 
 		for (const event of events) {
-			const hasMedia = event.media && event.media.length > 0;
 			const icon = L.divIcon({
-				className: `custom-marker${hasMedia ? " has-photo" : ""}`,
+				className: "custom-marker",
 				html: getCategoryIcon(event.category),
 				iconSize: [40, 40],
 				iconAnchor: [20, 40],
@@ -360,13 +357,8 @@ function createMapPopup(event) {
 	const dateStr = formatDate(event.date);
 	const categoryIcon = getCategoryIcon(event.category);
 
-	const imageHtml = event.media
-		? `<img src="${event.media}" alt="${event.title}" class="map-popup-image">`
-		: "";
-
 	return `
         <div class="map-popup">
-            ${imageHtml}
             <div class="map-popup-content">
                 <div class="map-popup-date">${categoryIcon} ${dateStr}</div>
                 <h3 class="map-popup-title">${event.title}</h3>
@@ -482,7 +474,6 @@ eventForm.addEventListener("submit", (e) => {
 		date: document.getElementById("event-date").value,
 		category: document.getElementById("event-category").value,
 		description: document.getElementById("event-description").value,
-		media: selectedMediaBase64,
 		author_id: Number.parseInt(document.getElementById("event-author").value),
 	};
 
@@ -492,16 +483,6 @@ eventForm.addEventListener("submit", (e) => {
 	renderGroupsList();
 	populateYearFilter();
 	eventForm.reset();
-
-	selectedMediaBase64 = "";
-	const mediaFileInput = document.getElementById("event-media-file");
-	const mediaPreviewContainer = document.getElementById(
-		"media-preview-container",
-	);
-	const mediaPreview = document.getElementById("media-preview");
-	if (mediaFileInput) mediaFileInput.value = "";
-	if (mediaPreview) mediaPreview.src = "";
-	if (mediaPreviewContainer) mediaPreviewContainer.style.display = "none";
 
 	eventModal.style.display = "none";
 	document.body.style.overflow = "";
@@ -514,37 +495,6 @@ function setupEventListeners() {
 	searchInput.addEventListener("input", applyFilters);
 	categoryFilter.addEventListener("change", applyFilters);
 	yearFilter.addEventListener("change", applyFilters);
-
-	const mediaFileInput = document.getElementById("event-media-file");
-	const mediaPreviewContainer = document.getElementById(
-		"media-preview-container",
-	);
-	const mediaPreview = document.getElementById("media-preview");
-	const removeMediaBtn = document.getElementById("remove-media-btn");
-
-	if (mediaFileInput) {
-		mediaFileInput.addEventListener("change", (e) => {
-			const file = e.target.files[0];
-			if (file) {
-				const reader = new FileReader();
-				reader.onload = (event) => {
-					selectedMediaBase64 = event.target.result;
-					mediaPreview.src = selectedMediaBase64;
-					mediaPreviewContainer.style.display = "block";
-				};
-				reader.readAsDataURL(file);
-			}
-		});
-	}
-
-	if (removeMediaBtn) {
-		removeMediaBtn.addEventListener("click", () => {
-			selectedMediaBase64 = "";
-			mediaFileInput.value = "";
-			mediaPreview.src = "";
-			mediaPreviewContainer.style.display = "none";
-		});
-	}
 }
 
 function applyFilters() {
