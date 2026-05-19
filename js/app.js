@@ -163,22 +163,21 @@ themeToggle.addEventListener("click", () => {
 });
 
 function updateMapTiles(theme) {
-	const isDark = theme === "dark";
-	const tileUrl = isDark
-		? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-		: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+	const tileUrl = getTileUrl(theme);
 
-	const updateTiles = (mapInstance) => {
+	const replaceTiles = (mapInstance) => {
+		if (!mapInstance) return;
 		mapInstance.eachLayer((layer) => {
 			if (layer instanceof L.TileLayer) {
-				layer.setUrl(tileUrl);
+				mapInstance.removeLayer(layer);
 			}
 		});
+		L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(mapInstance);
 	};
 
-	if (mapInstance) updateTiles(mapInstance);
-	if (pickerMapInstance) updateTiles(pickerMapInstance);
-	if (fullscreenMapInstance) updateTiles(fullscreenMapInstance);
+	if (mapInstance) replaceTiles(mapInstance);
+	if (pickerMapInstance) replaceTiles(pickerMapInstance);
+	if (fullscreenMapInstance) replaceTiles(fullscreenMapInstance);
 }
 
 // Render Groups List
