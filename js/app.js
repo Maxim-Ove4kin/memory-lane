@@ -168,11 +168,10 @@ function updateMapTiles(theme) {
 	const replaceTiles = (mapInstance) => {
 		if (!mapInstance) return;
 		mapInstance.eachLayer((layer) => {
-			if (layer instanceof L.TileLayer) {
-				mapInstance.removeLayer(layer);
-			}
+			mapInstance.removeLayer(layer);
 		});
 		L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(mapInstance);
+		mapInstance.invalidateSize();
 	};
 
 	if (mapInstance) replaceTiles(mapInstance);
