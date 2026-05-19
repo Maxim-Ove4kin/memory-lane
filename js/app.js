@@ -159,25 +159,7 @@ themeToggle.addEventListener("click", () => {
 	document.body.setAttribute("data-theme", newTheme);
 	localStorage.setItem("theme", newTheme);
 	updateThemeIcon(newTheme);
-	updateMapTiles(newTheme);
 });
-
-function updateMapTiles(theme) {
-	const tileUrl = getTileUrl(theme);
-
-	const replaceTiles = (mapInstance) => {
-		if (!mapInstance) return;
-		mapInstance.eachLayer((layer) => {
-			mapInstance.removeLayer(layer);
-		});
-		L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(mapInstance);
-		mapInstance.invalidateSize();
-	};
-
-	if (mapInstance) replaceTiles(mapInstance);
-	if (pickerMapInstance) replaceTiles(pickerMapInstance);
-	if (fullscreenMapInstance) replaceTiles(fullscreenMapInstance);
-}
 
 // Render Groups List
 function renderGroupsList(searchQuery = "") {
@@ -345,9 +327,12 @@ function initMap() {
 			attributionControl: false,
 		}).setView([55.7558, 37.6173], 3);
 
-		L.tileLayer(getTileUrl(getCurrentTheme()), {
-			maxZoom: 19,
-		}).addTo(mapInstance);
+		L.tileLayer(
+			"https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+			{
+				maxZoom: 19,
+			},
+		).addTo(mapInstance);
 	}
 
 	if (!markersGroup) {
@@ -645,9 +630,12 @@ function openFullscreenMap() {
 				attributionControl: false,
 			}).setView([55.7558, 37.6173], 10);
 
-			L.tileLayer(getTileUrl(getCurrentTheme()), {
-				maxZoom: 19,
-			}).addTo(fullscreenMapInstance);
+			L.tileLayer(
+				"https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+				{
+					maxZoom: 19,
+				},
+			).addTo(fullscreenMapInstance);
 
 			fullscreenMapInstance.on("click", async (e) => {
 				await setFullscreenMarkerLocation(e.latlng.lat, e.latlng.lng, true);
@@ -739,16 +727,6 @@ async function setFullscreenMarkerLocation(lat, lng, fetchAddress = false) {
 	}
 }
 
-function getTileUrl(theme) {
-	return theme === "dark"
-		? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-		: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
-}
-
-function getCurrentTheme() {
-	return document.body.getAttribute("data-theme") || "light";
-}
-
 function initPickerMap() {
 	const pickerMapEl = document.getElementById("picker-map");
 	if (!pickerMapEl) return;
@@ -759,9 +737,12 @@ function initPickerMap() {
 			attributionControl: false,
 		}).setView([55.7558, 37.6173], 9);
 
-		L.tileLayer(getTileUrl(getCurrentTheme()), {
-			maxZoom: 19,
-		}).addTo(pickerMapInstance);
+		L.tileLayer(
+			"https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+			{
+				maxZoom: 19,
+			},
+		).addTo(pickerMapInstance);
 
 		pickerMapInstance.on("click", async (e) => {
 			if (isFullscreenMode) {
