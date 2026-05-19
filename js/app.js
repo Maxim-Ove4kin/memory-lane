@@ -3,13 +3,13 @@
 const dataManager = new DataManager();
 let currentGroupId = null;
 let mapInstance = null;
+let selectedMediaBase64 = "";
 
 // DOM Elements
 const groupsList = document.getElementById("groups-list");
 const timeline = document.getElementById("timeline");
 const membersGrid = document.getElementById("members-grid");
 const badgesList = document.getElementById("badges-list");
-const mapContainer = document.getElementById("map");
 const eventModal = document.getElementById("event-modal");
 const groupModal = document.getElementById("group-modal");
 const settingsModal = document.getElementById("settings-modal");
@@ -291,6 +291,21 @@ function initMap() {
 	if (!currentGroupId) return;
 
 	const events = dataManager.getEventsWithLocation(currentGroupId);
+	const mapEl = document.getElementById("map");
+	const mapEmptyEl = document.getElementById("map-empty");
+
+	if (events.length === 0) {
+		if (mapEl) mapEl.style.display = "none";
+		if (mapEmptyEl) mapEmptyEl.style.display = "flex";
+		if (mapInstance) {
+			mapInstance.remove();
+			mapInstance = null;
+		}
+		return;
+	}
+
+	if (mapEl) mapEl.style.display = "block";
+	if (mapEmptyEl) mapEmptyEl.style.display = "none";
 
 	if (!mapInstance) {
 		mapInstance = L.map("map", {
@@ -304,20 +319,12 @@ function initMap() {
 				maxZoom: 19,
 			},
 		).addTo(mapInstance);
-	}
-
-	mapContainer.innerHTML = "";
-	mapContainer.appendChild(mapInstance.getContainer());
-
-	if (events.length === 0) {
-		mapContainer.innerHTML = `
-            <div class="map-empty">
-                <div class="map-empty-icon">🗺️</div>
-                <p class="map-empty-text">Нет воспоминаний с местоположением</p>
-                <p class="map-empty-hint">Добавьте координаты при создании события</p>
-            </div>
-        `;
-		return;
+	} else {
+		mapInstance.eachLayer((layer) => {
+			if (layer instanceof L.Marker) {
+				mapInstance.removeLayer(layer);
+			}
+		});
 	}
 
 	setTimeout(() => {
@@ -475,7 +482,7 @@ eventForm.addEventListener("submit", (e) => {
 		date: document.getElementById("event-date").value,
 		category: document.getElementById("event-category").value,
 		description: document.getElementById("event-description").value,
-		media: document.getElementById("event-media").value,
+		media: selectedMediaBase64,
 		author_id: Number.parseInt(document.getElementById("event-author").value),
 	};
 
@@ -485,6 +492,17 @@ eventForm.addEventListener("submit", (e) => {
 	renderGroupsList();
 	populateYearFilter();
 	eventForm.reset();
+
+	selectedMediaBase64 = "";
+	const mediaFileInput = document.getElementById("event-media-file");
+	const mediaPreviewContainer = document.getElementById(
+		"media-preview-container",
+	);
+	const mediaPreview = document.getElementById("media-preview");
+	if (mediaFileInput) mediaFileInput.value = "";
+	if (mediaPreview) mediaPreview.src = "";
+	if (mediaPreviewContainer) mediaPreviewContainer.style.display = "none";
+
 	eventModal.style.display = "none";
 	document.body.style.overflow = "";
 
@@ -496,6 +514,37 @@ function setupEventListeners() {
 	searchInput.addEventListener("input", applyFilters);
 	categoryFilter.addEventListener("change", applyFilters);
 	yearFilter.addEventListener("change", applyFilters);
+
+	const mediaFileInput = document.getElementById("event-media-file");
+	const mediaPreviewContainer = document.getElementById(
+		"media-preview-container",
+	);
+	const mediaPreview = document.getElementById("media-preview");
+	const removeMediaBtn = document.getElementById("remove-media-btn");
+
+	if (mediaFileInput) {
+		mediaFileInput.addEventListener("change", (e) => {
+			const file = e.target.files[0];
+			if (file) {
+				const reader = new FileReader();
+				reader.onload = (event) => {
+					selectedMediaBase64 = event.target.result;
+					mediaPreview.src = selectedMediaBase64;
+					mediaPreviewContainer.style.display = "block";
+				};
+				reader.readAsDataURL(file);
+			}
+		});
+	}
+
+	if (removeMediaBtn) {
+		removeMediaBtn.addEventListener("click", () => {
+			selectedMediaBase64 = "";
+			mediaFileInput.value = "";
+			mediaPreview.src = "";
+			mediaPreviewContainer.style.display = "none";
+		});
+	}
 }
 
 function applyFilters() {

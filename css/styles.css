@@ -95,6 +95,18 @@ header h1 {
 	transform: scale(0.98);
 }
 
+.btn-secondary {
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+	border: 2px solid var(--border);
+	width: 100%;
+}
+
+.btn-secondary:active {
+	transform: scale(0.98);
+	background: var(--border);
+}
+
 .btn-icon {
 	background: transparent;
 	font-size: 1.5rem;

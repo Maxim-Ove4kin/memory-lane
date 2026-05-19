@@ -66,8 +66,13 @@
                 <button id="back-to-groups-map" class="btn-back">← Назад</button>
                 <h2>Memory Map</h2>
             </div>
-            <div id="map" class="map-container">
-                <p class="placeholder">🗺️ Карта будет добавлена в следующей версии</p>
+            <div class="map-container">
+                <div id="map"></div>
+                <div id="map-empty" class="map-empty" style="display: none;">
+                    <div class="map-empty-icon">🗺️</div>
+                    <p class="map-empty-text">Нет воспоминаний с местоположением</p>
+                    <p class="map-empty-hint">Добавьте координаты при создании события</p>
+                </div>
             </div>
         </section>
 
@@ -96,7 +101,16 @@
                     <option value="Achievement">Достижения</option>
                 </select>
                 <textarea id="event-description" placeholder="Описание (поддерживается Markdown)" rows="4"></textarea>
-                <input type="url" id="event-media" placeholder="Ссылка на фото/видео">
+                <div class="file-input-wrapper">
+                    <label for="event-media-file" class="btn-secondary" style="display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 12px; border-radius: 12px;">
+                        <span>📷 Выбрать фото с устройства</span>
+                    </label>
+                    <input type="file" id="event-media-file" accept="image/*" style="display: none;">
+                    <div id="media-preview-container" style="display: none; margin-top: 10px; text-align: center; border: 2px dashed var(--border); padding: 10px; border-radius: 12px;">
+                        <img id="media-preview" src="" alt="Превью" style="max-width: 100%; max-height: 150px; border-radius: 8px; object-fit: cover;">
+                        <button type="button" id="remove-media-btn" style="color: #ff4d4d; border: none; background: none; margin-top: 5px; cursor: pointer; display: block; width: 100%; text-align: center; font-size: 0.9rem;">Удалить фото</button>
+                    </div>
+                </div>
                 <div class="location-inputs">
                     <input type="number" step="0.0001" id="event-lat" placeholder="Широта (lat)">
                     <input type="number" step="0.0001" id="event-lng" placeholder="Долгота (lng)">
