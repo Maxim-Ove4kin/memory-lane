@@ -4,6 +4,8 @@ const dataManager = new DataManager();
 let currentGroupId = null;
 let mapInstance = null;
 let markersGroup = null;
+let pickerMapInstance = null;
+let pickerMarker = null;
 
 // DOM Elements
 const groupsList = document.getElementById("groups-list");
@@ -229,10 +231,18 @@ function renderTimeline(filters = {}) {
 function createEventCard(event, member) {
 	const card = document.createElement("div");
 	card.className = "event-card";
+	const locationHtml =
+		event.location &&
+		(event.location.address ||
+			(event.location.lat !== 0 && event.location.lng !== 0))
+			? `<div class="event-location" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">📍 ${event.location.address || `${event.location.lat.toFixed(4)}, ${event.location.lng.toFixed(4)}`}</div>`
+			: "";
+
 	card.innerHTML = `
         <div class="event-date">${formatDate(event.date)}</div>
         <div class="event-category">${getCategoryIcon(event.category)} ${event.category}</div>
         <h3>${event.title}</h3>
+        ${locationHtml}
         <p class="event-description">${formatMarkdown(event.description)}</p>
         <div class="event-author">Автор: ${member ? member.name : "Неизвестно"}</div>
     `;
@@ -410,13 +420,16 @@ function initMap() {
 function createMapPopup(event) {
 	const dateStr = formatDate(event.date);
 	const categoryIcon = getCategoryIcon(event.category);
+	const locationStr =
+		event.location.address ||
+		`📍 ${Math.abs(event.location.lat).toFixed(2)}°, ${Math.abs(event.location.lng).toFixed(2)}°`;
 
 	return `
         <div class="map-popup">
             <div class="map-popup-content">
                 <div class="map-popup-date">${categoryIcon} ${dateStr}</div>
                 <h3 class="map-popup-title">${event.title}</h3>
-                <p class="map-popup-location">📍 ${Math.abs(event.location.lat).toFixed(2)}°, ${Math.abs(event.location.lng).toFixed(2)}°</p>
+                <p class="map-popup-location">📍 ${locationStr}</p>
                 <div class="map-popup-actions">
                     <button class="map-popup-btn map-popup-btn-secondary" onclick="viewEventDetails(${event.id})">Подробнее</button>
                 </div>
@@ -462,6 +475,7 @@ document.getElementById("add-btn").addEventListener("click", () => {
 	if (currentGroupId) {
 		// Inside group - add event
 		eventModal.style.display = "block";
+		setTimeout(() => initPickerMap(), 50);
 	} else {
 		// Main screen - create group
 		groupModal.style.display = "block";
@@ -538,6 +552,13 @@ eventForm.addEventListener("submit", (e) => {
 	populateYearFilter();
 	eventForm.reset();
 
+	if (pickerMarker) {
+		pickerMapInstance.removeLayer(pickerMarker);
+		pickerMarker = null;
+	}
+	document.getElementById("event-lat").value = "";
+	document.getElementById("event-lng").value = "";
+
 	eventModal.style.display = "none";
 	document.body.style.overflow = "";
 
@@ -549,6 +570,139 @@ function setupEventListeners() {
 	searchInput.addEventListener("input", applyFilters);
 	categoryFilter.addEventListener("change", applyFilters);
 	yearFilter.addEventListener("change", applyFilters);
+
+	const searchBtn = document.getElementById("search-address-btn");
+	const addressInput = document.getElementById("event-address");
+
+	if (searchBtn) {
+		searchBtn.addEventListener("click", searchAddress);
+	}
+
+	if (addressInput) {
+		addressInput.addEventListener("keypress", (e) => {
+			if (e.key === "Enter") {
+				e.preventDefault();
+				searchAddress();
+			}
+		});
+	}
+}
+
+// Interactive Location Picker Map
+function initPickerMap() {
+	const pickerMapEl = document.getElementById("picker-map");
+	if (!pickerMapEl) return;
+
+	if (!pickerMapInstance) {
+		pickerMapInstance = L.map("picker-map", {
+			zoomControl: true,
+			attributionControl: false,
+		}).setView([55.7558, 37.6173], 9);
+
+		L.tileLayer(
+			"https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+			{
+				maxZoom: 19,
+			},
+		).addTo(pickerMapInstance);
+
+		pickerMapInstance.on("click", async (e) => {
+			const { lat, lng } = e.latlng;
+			await setPickerLocation(lat, lng, true);
+		});
+	} else {
+		if (pickerMarker) {
+			pickerMapInstance.removeLayer(pickerMarker);
+			pickerMarker = null;
+		}
+		pickerMapInstance.setView([55.7558, 37.6173], 9);
+	}
+
+	setTimeout(() => {
+		pickerMapInstance.invalidateSize();
+	}, 100);
+}
+
+async function setPickerLocation(lat, lng, fetchAddress = false) {
+	document.getElementById("event-lat").value = lat;
+	document.getElementById("event-lng").value = lng;
+
+	if (pickerMarker) {
+		pickerMarker.setLatLng([lat, lng]);
+	} else {
+		pickerMarker = L.marker([lat, lng]).addTo(pickerMapInstance);
+	}
+
+	pickerMapInstance.setView([lat, lng], pickerMapInstance.getZoom());
+
+	if (fetchAddress) {
+		const addressInput = document.getElementById("event-address");
+		addressInput.placeholder = "Определяем адрес...";
+		try {
+			const response = await fetch(
+				`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=ru`,
+				{
+					headers: {
+						"User-Agent": "MemoryLanePWA/1.0",
+					},
+				},
+			);
+			const data = await response.json();
+			if (data?.display_name) {
+				const addressParts = data.display_name.split(", ");
+				const simpleAddress = addressParts.slice(0, 3).join(", ");
+				addressInput.value = simpleAddress;
+			} else {
+				addressInput.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+			}
+		} catch (error) {
+			console.error("Reverse geocoding error:", error);
+			addressInput.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+		} finally {
+			addressInput.placeholder = "Введите адрес для поиска...";
+		}
+	}
+}
+
+async function searchAddress() {
+	const address = document.getElementById("event-address").value.trim();
+	if (!address) return;
+
+	const searchBtn = document.getElementById("search-address-btn");
+	const origContent = searchBtn.innerHTML;
+	searchBtn.innerHTML = "⌛";
+	searchBtn.disabled = true;
+
+	try {
+		const response = await fetch(
+			`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(address)}&accept-language=ru&limit=1`,
+			{
+				headers: {
+					"User-Agent": "MemoryLanePWA/1.0",
+				},
+			},
+		);
+		const data = await response.json();
+		if (data?.length > 0) {
+			const { lat, lon, display_name } = data[0];
+			const parsedLat = Number.parseFloat(lat);
+			const parsedLng = Number.parseFloat(lon);
+
+			await setPickerLocation(parsedLat, parsedLng, false);
+
+			const addressParts = display_name.split(", ");
+			const simpleAddress = addressParts.slice(0, 3).join(", ");
+			document.getElementById("event-address").value = simpleAddress;
+		} else {
+			showToast("Адрес не найден");
+		}
+	} catch (error) {
+		console.error("Geocoding error:", error);
+		showToast("Ошибка при поиске адреса");
+	} finally {
+		searchBtn.innerHTML = origContent;
+		searchBtn.disabled = false;
+	}
 }
 
 function applyFilters() {

@@ -33,7 +33,11 @@ const DEFAULT_DATA = {
 						"Тот самый день, когда мы потеряли палатку. Незабываемое приключение в горах!",
 					author_id: 1,
 					category: "Travel",
-					location: { lat: 50.0, lng: 85.0 },
+					location: {
+						lat: 50.0,
+						lng: 85.0,
+						address: "Республика Алтай, Россия",
+					},
 				},
 				{
 					id: 102,
@@ -43,7 +47,11 @@ const DEFAULT_DATA = {
 						"Шашлыки, баня и ночёвка под звёздами. Лучший день рождения!",
 					author_id: 2,
 					category: "Achievement",
-					location: { lat: 55.7558, lng: 37.6173 },
+					location: {
+						lat: 55.7558,
+						lng: 37.6173,
+						address: "Москва, Красная площадь",
+					},
 				},
 				{
 					id: 103,
@@ -53,7 +61,11 @@ const DEFAULT_DATA = {
 						"Встречали Новый год в Санкт-Петербурге. Фейерверк на Дворцовой был шикарным!",
 					author_id: 1,
 					category: "Travel",
-					location: { lat: 59.9343, lng: 30.3351 },
+					location: {
+						lat: 59.9343,
+						lng: 30.3351,
+						address: "Санкт-Петербург, Дворцовая площадь",
+					},
 				},
 				{
 					id: 104,
@@ -63,7 +75,11 @@ const DEFAULT_DATA = {
 						"Ходили на концерт любимой группы. Зал взорвался от восторга!",
 					author_id: 2,
 					category: "Humor",
-					location: { lat: 55.765, lng: 37.59 },
+					location: {
+						lat: 55.765,
+						lng: 37.59,
+						address: "Москва, Тверская улица",
+					},
 				},
 			],
 		},
@@ -98,7 +114,11 @@ const DEFAULT_DATA = {
 						"Отличный день у воды! Купались, жарили сосиски, играли в волейбол.",
 					author_id: 3,
 					category: "Travel",
-					location: { lat: 55.5, lng: 36.0 },
+					location: {
+						lat: 55.5,
+						lng: 36.0,
+						address: "Московская область, озеро Глубокое",
+					},
 				},
 			],
 		},
@@ -162,6 +182,7 @@ class DataManager {
 			Number.parseFloat(document.getElementById("event-lat")?.value) || 0;
 		const lng =
 			Number.parseFloat(document.getElementById("event-lng")?.value) || 0;
+		const address = document.getElementById("event-address")?.value || "";
 
 		const newEvent = {
 			id: Date.now(),
@@ -170,7 +191,7 @@ class DataManager {
 			category: eventData.category,
 			description: eventData.description,
 			author_id: Number.parseInt(eventData.author_id),
-			location: { lat, lng },
+			location: { lat, lng, address },
 		};
 
 		group.events.push(newEvent);
