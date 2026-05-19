@@ -6,6 +6,9 @@ let mapInstance = null;
 let markersGroup = null;
 let pickerMapInstance = null;
 let pickerMarker = null;
+let fullscreenMapInstance = null;
+let fullscreenMarker = null;
+let isFullscreenMode = false;
 
 // DOM Elements
 const groupsList = document.getElementById("groups-list");
@@ -586,16 +589,151 @@ function setupEventListeners() {
 			}
 		});
 	}
+
+	const expandBtn = document.getElementById("expand-picker-map-btn");
+	if (expandBtn) {
+		expandBtn.addEventListener("click", openFullscreenMap);
+	}
+
+	const closeFullscreenBtn = document.getElementById(
+		"close-fullscreen-map-btn",
+	);
+	if (closeFullscreenBtn) {
+		closeFullscreenBtn.addEventListener("click", closeFullscreenMap);
+	}
+
+	const confirmLocationBtn = document.getElementById("confirm-location-btn");
+	if (confirmLocationBtn) {
+		confirmLocationBtn.addEventListener("click", confirmFullscreenLocation);
+	}
+
+	const fullscreenModal = document.getElementById("fullscreen-map-modal");
+	if (fullscreenModal) {
+		fullscreenModal.addEventListener("click", (e) => {
+			if (e.target === fullscreenModal) {
+				closeFullscreenMap();
+			}
+		});
+	}
 }
 
-// Interactive Location Picker Map
+function openFullscreenMap() {
+	isFullscreenMode = true;
+	const modal = document.getElementById("fullscreen-map-modal");
+	modal.style.display = "block";
+	document.body.style.overflow = "hidden";
+
+	setTimeout(() => {
+		if (!fullscreenMapInstance) {
+			fullscreenMapInstance = L.map("fullscreen-picker-map", {
+				zoomControl: false,
+				attributionControl: false,
+			}).setView([55.7558, 37.6173], 10);
+
+			L.tileLayer(
+				"https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+				{
+					maxZoom: 19,
+				},
+			).addTo(fullscreenMapInstance);
+
+			fullscreenMapInstance.on("click", async (e) => {
+				await setFullscreenMarkerLocation(e.latlng.lat, e.latlng.lng, true);
+			});
+		} else {
+			fullscreenMapInstance.invalidateSize();
+		}
+
+		const latVal = document.getElementById("event-lat").value;
+		const lngVal = document.getElementById("event-lng").value;
+		if (latVal && lngVal) {
+			setFullscreenMarkerLocation(
+				Number.parseFloat(latVal),
+				Number.parseFloat(lngVal),
+				false,
+			);
+		}
+
+		const addrVal = document.getElementById("event-address").value;
+		document.getElementById("fullscreen-address-display").textContent =
+			addrVal || "";
+	}, 100);
+}
+
+function closeFullscreenMap() {
+	isFullscreenMode = false;
+	const modal = document.getElementById("fullscreen-map-modal");
+	modal.style.display = "none";
+	document.body.style.overflow = "";
+}
+
+async function confirmFullscreenLocation() {
+	if (!fullscreenMarker) return;
+	const lat = fullscreenMarker.getLatLng().lat;
+	const lng = fullscreenMarker.getLatLng().lng;
+
+	document.getElementById("event-lat").value = lat;
+	document.getElementById("event-lng").value = lng;
+
+	const addressDisplay = document.getElementById(
+		"fullscreen-address-display",
+	).textContent;
+	document.getElementById("event-address").value = addressDisplay;
+
+	if (pickerMarker) {
+		pickerMarker.setLatLng([lat, lng]);
+	} else {
+		pickerMarker = L.marker([lat, lng]).addTo(pickerMapInstance);
+	}
+	pickerMapInstance.setView([lat, lng], pickerMapInstance.getZoom());
+
+	closeFullscreenMap();
+}
+
+async function setFullscreenMarkerLocation(lat, lng, fetchAddress = false) {
+	if (fullscreenMarker) {
+		fullscreenMarker.setLatLng([lat, lng]);
+	} else {
+		fullscreenMarker = L.marker([lat, lng]).addTo(fullscreenMapInstance);
+	}
+	fullscreenMapInstance.setView([lat, lng], fullscreenMapInstance.getZoom());
+
+	if (fetchAddress) {
+		document.getElementById("fullscreen-address-display").textContent =
+			"Определяем адрес...";
+		try {
+			const response = await fetch(
+				`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=ru`,
+				{
+					headers: {
+						"User-Agent": "MemoryLanePWA/1.0",
+					},
+				},
+			);
+			const data = await response.json();
+			if (data?.display_name) {
+				const addressParts = data.display_name.split(", ");
+				const simpleAddress = addressParts.slice(0, 3).join(", ");
+				document.getElementById("fullscreen-address-display").textContent =
+					simpleAddress;
+			} else {
+				document.getElementById("fullscreen-address-display").textContent =
+					`${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+			}
+		} catch {
+			document.getElementById("fullscreen-address-display").textContent =
+				`${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+		}
+	}
+}
+
 function initPickerMap() {
 	const pickerMapEl = document.getElementById("picker-map");
 	if (!pickerMapEl) return;
 
 	if (!pickerMapInstance) {
 		pickerMapInstance = L.map("picker-map", {
-			zoomControl: true,
+			zoomControl: false,
 			attributionControl: false,
 		}).setView([55.7558, 37.6173], 9);
 
@@ -607,15 +745,20 @@ function initPickerMap() {
 		).addTo(pickerMapInstance);
 
 		pickerMapInstance.on("click", async (e) => {
-			const { lat, lng } = e.latlng;
-			await setPickerLocation(lat, lng, true);
+			if (isFullscreenMode) {
+				await setFullscreenMarkerLocation(e.latlng.lat, e.latlng.lng, true);
+			} else {
+				await setPickerLocation(e.latlng.lat, e.latlng.lng, true);
+			}
 		});
 	} else {
 		if (pickerMarker) {
 			pickerMapInstance.removeLayer(pickerMarker);
 			pickerMarker = null;
 		}
-		pickerMapInstance.setView([55.7558, 37.6173], 9);
+		if (!isFullscreenMode) {
+			pickerMapInstance.setView([55.7558, 37.6173], 9);
+		}
 	}
 
 	setTimeout(() => {
@@ -667,12 +810,10 @@ async function setPickerLocation(lat, lng, fetchAddress = false) {
 async function searchAddress() {
 	const address = document.getElementById("event-address").value.trim();
 	if (!address) return;
-
 	const searchBtn = document.getElementById("search-address-btn");
 	const origContent = searchBtn.innerHTML;
 	searchBtn.innerHTML = "⌛";
 	searchBtn.disabled = true;
-
 	try {
 		const response = await fetch(
 			`https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(address)}&accept-language=ru&limit=1`,
@@ -687,12 +828,15 @@ async function searchAddress() {
 			const { lat, lon, display_name } = data[0];
 			const parsedLat = Number.parseFloat(lat);
 			const parsedLng = Number.parseFloat(lon);
-
 			await setPickerLocation(parsedLat, parsedLng, false);
-
 			const addressParts = display_name.split(", ");
 			const simpleAddress = addressParts.slice(0, 3).join(", ");
 			document.getElementById("event-address").value = simpleAddress;
+			if (isFullscreenMode && fullscreenMapInstance) {
+				setFullscreenMarkerLocation(parsedLat, parsedLng, false);
+				document.getElementById("fullscreen-address-display").textContent =
+					simpleAddress;
+			}
 		} else {
 			showToast("Адрес не найден");
 		}

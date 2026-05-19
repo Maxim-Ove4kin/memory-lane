@@ -105,12 +105,17 @@
                 <textarea id="event-description" placeholder="Описание (поддерживается Markdown)" rows="4"></textarea>
 
                 <div class="location-picker-group" style="margin-bottom: 10px;">
-                    <label style="font-weight: 500; margin-bottom: 5px; display: block;">📍 Выберите место на карте или введите адрес</label>
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                        <label style="font-weight: 500;">📍 Выберите место на карте или введите адрес</label>
+                        <button type="button" id="expand-picker-map-btn" class="expand-map-btn" title="Развернуть карту">⛶</button>
+                    </div>
                     <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                         <input type="text" id="event-address" placeholder="Введите адрес для поиска..." style="flex: 1; min-height: 44px; margin-bottom: 0;">
                         <button type="button" id="search-address-btn" class="btn-secondary" style="width: auto; padding: 0 15px; min-height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 0;">🔍</button>
                     </div>
-                    <div id="picker-map" style="width: 100%; height: 200px; border-radius: 12px; border: 2px solid var(--border); margin-bottom: 10px; overflow: hidden; position: relative; z-index: 1;"></div>
+                    <div id="picker-map-wrapper" class="picker-map-wrapper">
+                        <div id="picker-map" class="picker-map-inner"></div>
+                    </div>
                     <input type="hidden" id="event-lat">
                     <input type="hidden" id="event-lng">
                 </div>
@@ -182,6 +187,21 @@
                 <button id="import-btn" class="menu-item">📤 Импорт данных</button>
                 <input type="file" id="import-file" accept=".json" style="display: none;">
             </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Map Modal for Location Picker -->
+    <div id="fullscreen-map-modal" class="modal" style="background: rgba(0,0,0,0.85); z-index: 10001;">
+        <div class="modal-content" style="width: 95%; height: 90%; margin: 2% auto; max-width: 100%; padding: 10px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 600; font-size: 1rem;">Выберите место на карте</span>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span id="fullscreen-address-display" style="font-size: 0.85rem; color: var(--text-secondary);"></span>
+                    <button id="confirm-location-btn" class="btn-primary" style="width: auto; padding: 8px 16px; font-size: 0.85rem;">Подтвердить</button>
+                    <button id="close-fullscreen-map-btn" class="btn-icon" style="font-size: 1.5rem; min-width: 36px; min-height: 36px; background: transparent; border-radius: 50%; display: flex; align-items: center; justify-content: center;">&times;</button>
+                </div>
+            </div>
+            <div id="fullscreen-picker-map" style="flex: 1; border-radius: 12px; overflow: hidden; border: 2px solid var(--border);"></div>
         </div>
     </div>
 

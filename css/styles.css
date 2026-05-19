@@ -923,6 +923,72 @@ textarea {
 	color: white;
 }
 
+/* Location Picker Map Styles */
+.picker-map-wrapper {
+	width: 100%;
+	height: 200px;
+	border-radius: 12px;
+	border: 2px solid var(--border);
+	overflow: hidden;
+	position: relative;
+}
+
+.picker-map-inner {
+	width: 100%;
+	height: 100%;
+}
+
+/* Leaflet zoom controls removal for picker maps */
+.picker-map-inner .leaflet-control-zoom,
+#picker-map .leaflet-control-zoom {
+	display: none !important;
+}
+
+/* Fullscreen picker map */
+.picker-map-wrapper.expanded {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	z-index: 10002;
+	border-radius: 0;
+	border: none;
+}
+
+.picker-map-wrapper.expanded ~ .modal,
+body.picker-expanded > .modal {
+	pointer-events: none;
+}
+
+body.picker-fullscreen #fullscreen-map-modal {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Expand button */
+.expand-map-btn {
+	background: var(--bg-secondary);
+	border: 2px solid var(--border);
+	color: var(--text-primary);
+	border-radius: 8px;
+	padding: 6px 10px;
+	cursor: pointer;
+	font-size: 1.1rem;
+	transition: all 0.3s;
+	min-height: 36px;
+	min-width: 36px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.expand-map-btn:active {
+	background: var(--accent);
+	color: white;
+}
+
 /* Custom Marker Cluster Style */
 .marker-cluster-small,
 .marker-cluster-medium,
