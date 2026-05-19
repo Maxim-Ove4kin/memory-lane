@@ -922,3 +922,96 @@ textarea {
 	background: var(--accent);
 	color: white;
 }
+
+/* Custom Marker Cluster Style */
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+	background-color: rgba(212, 165, 116, 0.4);
+}
+
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+	background-color: var(--accent);
+	color: white;
+	font-weight: bold;
+	font-family: inherit;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.marker-cluster {
+	background-clip: padding-box;
+	border-radius: 20px;
+}
+.marker-cluster div {
+	width: 30px;
+	height: 30px;
+	margin-left: 5px;
+	margin-top: 5px;
+	text-align: center;
+	border-radius: 15px;
+	font-size: 12px;
+}
+.marker-cluster span {
+	line-height: 30px;
+}
+
+/* Cluster popup styling */
+.map-popup-cluster {
+	padding: 8px;
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.map-popup-cluster h3 {
+	font-size: 1.1rem;
+	color: var(--accent-dark);
+	margin-bottom: 8px;
+	border-bottom: 2px solid var(--border);
+	padding-bottom: 6px;
+}
+
+.map-popup-cluster-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.map-popup-cluster-list li {
+	font-size: 0.9rem;
+	color: var(--text-primary);
+	border-bottom: 1px dashed var(--border);
+	padding-bottom: 6px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+}
+
+.map-popup-cluster-list li:last-child {
+	border-bottom: none;
+}
+
+.map-popup-cluster-list .btn-detail {
+	background: var(--bg-secondary);
+	border: 1px solid var(--border);
+	padding: 2px 8px;
+	border-radius: 6px;
+	font-size: 0.75rem;
+	cursor: pointer;
+	color: var(--accent-dark);
+	min-height: 24px;
+	transition: all 0.2s;
+}
+
+.map-popup-cluster-list .btn-detail:active {
+	background: var(--accent);
+	color: white;
+}

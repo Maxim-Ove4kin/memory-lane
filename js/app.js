@@ -3,6 +3,7 @@
 const dataManager = new DataManager();
 let currentGroupId = null;
 let mapInstance = null;
+let markersGroup = null;
 
 // DOM Elements
 const groupsList = document.getElementById("groups-list");
@@ -84,6 +85,7 @@ function showGroupsList() {
 	if (mapInstance) {
 		mapInstance.remove();
 		mapInstance = null;
+		markersGroup = null;
 	}
 	for (const tabContent of document.querySelectorAll(".tab-content")) {
 		tabContent.classList.remove("active");
@@ -298,6 +300,7 @@ function initMap() {
 		if (mapInstance) {
 			mapInstance.remove();
 			mapInstance = null;
+			markersGroup = null;
 		}
 		return;
 	}
@@ -317,12 +320,60 @@ function initMap() {
 				maxZoom: 19,
 			},
 		).addTo(mapInstance);
-	} else {
-		mapInstance.eachLayer((layer) => {
-			if (layer instanceof L.Marker) {
-				mapInstance.removeLayer(layer);
-			}
+	}
+
+	if (!markersGroup) {
+		markersGroup = L.markerClusterGroup({
+			zoomToBoundsOnClick: false,
+			maxClusterRadius: 50,
+			iconCreateFunction: (cluster) => {
+				const childCount = cluster.getChildCount();
+				let c = " marker-cluster-";
+				if (childCount < 10) {
+					c += "small";
+				} else if (childCount < 100) {
+					c += "medium";
+				} else {
+					c += "large";
+				}
+				return new L.DivIcon({
+					html: `<div><span>${childCount}</span></div>`,
+					className: `marker-cluster${c}`,
+					iconSize: new L.Point(40, 40),
+				});
+			},
 		});
+
+		markersGroup.on("clusterclick", (a) => {
+			const childMarkers = a.layer.getAllChildMarkers();
+			let popupContent = '<div class="map-popup-cluster">';
+			popupContent += `<h3>События в этой области (${childMarkers.length})</h3>`;
+			popupContent += '<ul class="map-popup-cluster-list">';
+
+			for (const marker of childMarkers) {
+				const event = marker.options.eventData;
+				popupContent += `
+					<li>
+						<div>
+							<strong>${formatDate(event.date)}</strong><br>
+							${event.title}
+						</div>
+						<button class="btn-detail" onclick="viewEventDetails(${event.id})">Детали</button>
+					</li>
+				`;
+			}
+
+			popupContent += "</ul></div>";
+
+			L.popup()
+				.setLatLng(a.latlng)
+				.setContent(popupContent)
+				.openOn(mapInstance);
+		});
+
+		markersGroup.addTo(mapInstance);
+	} else {
+		markersGroup.clearLayers();
 	}
 
 	setTimeout(() => {
@@ -345,10 +396,13 @@ function initMap() {
 
 			const marker = L.marker([event.location.lat, event.location.lng], {
 				icon,
-			}).addTo(mapInstance);
+				eventData: event,
+			});
 
 			const popupContent = createMapPopup(event);
 			marker.bindPopup(popupContent);
+
+			markersGroup.addLayer(marker);
 		}
 	}, 100);
 }
